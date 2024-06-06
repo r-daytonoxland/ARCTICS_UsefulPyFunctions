@@ -17,21 +17,32 @@ def sun_loc(obstime):
     return SkyCoord(0 * u.arcsec, 0 * u.arcsec, obstime=obstime, observer="earth", frame=frames.Helioprojective)
 
 
-def get_solel(obstime, latitude, longitude):
+def moon_loc(obstime):
+
+    return get_body(body="moon", obstime=obstime, observer="earth")
+
+
+def get_elevation(obstime, latitude, longitude, moon=None):
+    """Default to sun, for moon add keyword moon"""
 
     obsloca = EarthLocation(lat=latitude*u.deg, lon=longitude*u.deg, height=0*u.km)
     
     # Define centre of the solar disk
-    c = sun_loc(obstime)
+    if moon:
+        c = moon_loc(obstime)
+    else:
+        c = sun_loc(obstime)
 
     # Define observers frame
     frame_altaz = AltAz(obstime=Time(obstime), location=obsloca)
     
     # Transform sun location to observers altaz frame
-    sun_altaz = c.transform_to(frame_altaz)
+    altaz = c.transform_to(frame_altaz)
     
     # Return solar elevation angle
-    return Angle(sun_altaz.T.alt)
+    return Angle(altaz.T.alt)
+
+
 
 
 def convert_todataframe(filename):
@@ -40,10 +51,10 @@ def convert_todataframe(filename):
 
     els=[]
     for index, row in df.iterrows():
-        solel = get_solel(Time(row['time']), row['lat'], row['lon'])
-        els.append(solel)
+        el = get_elevation(Time(row['time']), row['lat'], row['lon'])
+        els.append(el)
 
-    df['Sun_angle'] = els
+    df['Angle'] = els
 
     return df
 

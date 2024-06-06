@@ -1,7 +1,7 @@
 """For quickly converting location and UTC time to Solar elevation angle"""
 
 import astropy.units as u
-from astropy.coordinates import AltAz, EarthLocation, SkyCoord, Angle
+from astropy.coordinates import AltAz, EarthLocation, SkyCoord, Angle, get_body
 from astropy.time import Time
 from sunpy.coordinates import frames
 import pandas as pd
@@ -19,11 +19,11 @@ def sun_loc(obstime):
 
 def moon_loc(obstime):
 
-    return get_body(body="moon", obstime=obstime, observer="earth")
+    return get_body(body="moon", time=obstime)
 
 
 def get_elevation(obstime, latitude, longitude, moon=None):
-    """Default to sun, for moon add keyword moon"""
+    """Default to sun, for moon instead add keyword moon"""
 
     obsloca = EarthLocation(lat=latitude*u.deg, lon=longitude*u.deg, height=0*u.km)
     
@@ -45,13 +45,13 @@ def get_elevation(obstime, latitude, longitude, moon=None):
 
 
 
-def convert_todataframe(filename):
+def convert_todataframe(filename, moon=None):
     
     df = get_data(filename)
 
     els=[]
     for index, row in df.iterrows():
-        el = get_elevation(Time(row['time']), row['lat'], row['lon'])
+        el = get_elevation(Time(row['time']), row['lat'], row['lon'], moon=moon)
         els.append(el)
 
     df['Angle'] = els
@@ -59,9 +59,9 @@ def convert_todataframe(filename):
     return df
 
 
-def convert_csv(filename, tofile=None):
+def convert_csv(filename, tofile=None, moon=None):
 
-    df = convert_todataframe(filename)
+    df = convert_todataframe(filename, moon=moon)
     if tofile:
         df.to_csv(tofile)
     else:
@@ -74,8 +74,9 @@ def convert_csv(filename, tofile=None):
 obstime = "2024-09-21 19:00:00" # UTC
 latitude = 56
 longitude = -5
-get_solel(obstime, latitude, longitude)
+get_elevation(obstime, latitude, longitude)
 
 # Convert a csv file of time, lat, lon data to include solar elevation angle
 filename = 'timelatlon.csv'
 convert_csv(filename, tofile='with_sunelevation.csv')
+convert_csv(filename, tofile='with_moonelevation.csv', moon=True)

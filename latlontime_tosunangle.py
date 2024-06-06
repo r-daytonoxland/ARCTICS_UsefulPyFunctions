@@ -1,7 +1,9 @@
+"""For quickly converting location and UTC time to Solar elevation angle"""
+
 import astropy.units as u
 from astropy.coordinates import AltAz, EarthLocation, SkyCoord
 from astropy.time import Time
-from sunpy.coordinates import frames, sun
+from sunpy.coordinates import frames
 
 def get_solel(obstime, latitude, longitude):
 
@@ -22,7 +24,7 @@ def get_solel(obstime, latitude, longitude):
 
 
 """ Example conversion """
-obstime = "2024-09-21 19:00:00"
+obstime = "2024-09-21 19:00:00" # UTC
 latitude = 56
 longitude = -5
 

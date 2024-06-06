@@ -1,7 +1,7 @@
 """For quickly converting location and UTC time to Solar elevation angle"""
 
 import astropy.units as u
-from astropy.coordinates import AltAz, EarthLocation, SkyCoord
+from astropy.coordinates import AltAz, EarthLocation, SkyCoord, Angle
 from astropy.time import Time
 from sunpy.coordinates import frames
 import pandas as pd
@@ -31,10 +31,10 @@ def get_solel(obstime, latitude, longitude):
     sun_altaz = c.transform_to(frame_altaz)
     
     # Return solar elevation angle
-    return astropy.coordinates.Angle(sun_altaz.T.alt)
+    return Angle(sun_altaz.T.alt)
 
 
-def convert_file(filename):
+def convert_todataframe(filename):
     
     df = get_data(filename)
 
@@ -48,9 +48,23 @@ def convert_file(filename):
     return df
 
 
-""" Example conversion """
-filename = 'example.csv'
+def convert_csv(filename, tofile=None):
+
+    df = convert_todataframe(filename)
+    if tofile:
+        df.to_csv(tofile)
+    else:
+        df.to_csv(filename)
+
+
+""" Example use """
+
+# Get the solar elevation angle from direct input
 obstime = "2024-09-21 19:00:00" # UTC
 latitude = 56
 longitude = -5
 get_solel(obstime, latitude, longitude)
+
+# Convert a csv file of time, lat, lon data to include solar elevation angle
+filename = 'timelatlon.csv'
+convert_csv(filename, tofile='with_sunelevation.csv')
